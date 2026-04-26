@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Happiness Budget 快乐热量预算器 V10</title>
+  <style>
+    :root{
+      --bg:#fbf5ea;--ink:#251e18;--muted:#766b60;--card:#fffdf8;--line:#eadfce;
+      --green:#5c805c;--yellow:#b87a22;--red:#b35248;--pink:#f7becd;--cream:#fff0c7;--blue:#dcecf6;
+      --shadow:0 24px 80px rgba(82,54,22,.12);--radius:30px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%,rgba(247,190,205,.34),transparent 30%),
+        radial-gradient(circle at 92% 4%,rgba(220,236,246,.62),transparent 34%),
+        radial-gradient(circle at 50% 95%,rgba(255,240,199,.66),transparent 38%),
+        var(--bg);
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{width:min(1180px,calc(100% - 28px));margin:0 auto;padding:22px 0 42px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+    .logo{width:34px;height:34px;border-radius:13px;background:linear-gradient(135deg,#ffe8ad,#f7becd,#dcecf6);box-shadow:0 10px 30px rgba(82,54,22,.12)}
+    .progress{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .progress button{border:1px solid var(--line);background:rgba(255,253,248,.70);border-radius:999px;padding:7px 10px;color:var(--muted);font-size:12px}
+    .progress button.active{background:#ffe8ad;color:var(--ink);border-color:#d1a15f}
+    .back-float{position:fixed;left:18px;bottom:18px;z-index:60;border:1px solid var(--line);background:#fffdf8;border-radius:999px;padding:11px 14px;color:var(--muted);box-shadow:0 14px 45px rgba(82,54,22,.12)}
+    .back-float:hover{color:var(--ink);border-color:#d1a15f}
+    .back-float.hidden{display:none!important}
+    .page{display:none;min-height:calc(100vh - 112px);animation:fade .25s ease}
+    .page.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .card{border:1px solid var(--line);background:rgba(255,253,248,.88);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+    .hero{min-height:calc(100vh - 120px);display:grid;grid-template-columns:1.05fr .95fr;gap:20px;align-items:stretch}
+    .hero-main{padding:46px;display:flex;flex-direction:column;justify-content:center}
+    .hero-side{padding:34px;display:flex;flex-direction:column;justify-content:space-between}
+    .eyebrow{display:inline-flex;width:max-content;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff9ed;color:var(--muted);font-size:12px;margin-bottom:22px}
+    h1{font-size:clamp(48px,7vw,92px);line-height:.92;letter-spacing:-.07em;margin:0 0 22px}
+    .sub{font-size:17px;line-height:1.8;color:var(--muted);max-width:760px;margin:0 0 28px}
+    .quote{font-size:clamp(30px,3.8vw,52px);line-height:1.08;letter-spacing:-.06em}.quote span{color:var(--green);display:block}
+    .note{font-size:13px;color:var(--muted);line-height:1.8}
+    .btn{
+      border:1px solid var(--line);background:#fffaf1;border-radius:18px;padding:13px 15px;color:var(--ink);
+      transition:.18s;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;
+    }
+    .btn:hover{transform:translateY(-1px);border-color:#d1a15f;box-shadow:0 12px 28px rgba(82,54,22,.08)}
+    .btn.primary{border:0;background:linear-gradient(135deg,#ffe8ad,#f7becd);font-weight:900}
+    .btn.active{background:#ffe8ad;border-color:#d1a15f}
+    .page-card{padding:34px;min-height:calc(100vh - 112px)}
+    .page-title{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:24px}
+    h2{font-size:clamp(32px,4vw,54px);line-height:1;letter-spacing:-.055em;margin:0}
+    .page-title p{max-width:540px;color:var(--muted);line-height:1.7;margin:0}.page-title p:empty{display:none}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .field{display:grid;gap:8px;margin-bottom:14px}
+    .field label{font-size:12px;color:var(--muted)}
+    input,select{width:100%;border:1px solid var(--line);background:white;border-radius:18px;padding:14px;color:var(--ink);outline:none}
+    input:focus,select:focus{border-color:#d1a15f;box-shadow:0 0 0 4px rgba(209,161,95,.14)}
+    .mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 18px}
+    .hint{border:1px solid var(--line);background:#fff7ec;border-radius:20px;padding:14px;color:var(--muted);font-size:13px;line-height:1.65;margin-top:12px}
+    .actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:22px}
+    .budget-card{display:grid;grid-template-columns:1fr .86fr;gap:18px}
+    .big{font-size:clamp(70px,9vw,118px);font-weight:950;letter-spacing:-.08em;line-height:.9}
+    .big small{font-size:22px;letter-spacing:0;color:var(--muted)}
+    .status{border-radius:26px;padding:22px;background:#eff8ef;border:1px solid #d8ead9}
+    .status.yellow{background:#fff3d9;border-color:#f0d29b}.status.red{background:#fff0ee;border-color:#f3c4be}
+    .status h3{margin:0 0 8px;font-size:26px}.status p{margin:0;color:var(--muted);line-height:1.65}
+    .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+    .metric{border:1px solid var(--line);background:white;border-radius:20px;padding:16px}.metric b{font-size:24px;display:block}.metric span{font-size:12px;color:var(--muted)}
+    .route-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .route-btn{display:block;text-align:left;padding:20px;border-radius:24px;min-height:210px}
+    .route-btn b{display:block;font-size:23px;margin-bottom:10px}.route-btn span{font-size:14px;color:var(--muted);line-height:1.6}
+    .route-btn.active{background:#ffe8ad;border-color:#d1a15f}
+    .result-layout{display:grid;grid-template-columns:1fr;gap:18px}
+    .result-block{border:1px solid var(--line);background:rgba(255,255,255,.62);border-radius:26px;padding:22px}
+    .routes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+    .route-card{border:1px solid var(--line);background:white;border-radius:24px;padding:18px}
+    .route-card h3{margin:0 0 8px;font-size:22px}.route-card p{font-size:13px;color:var(--muted);line-height:1.65;margin:0 0 12px}
+    .combo-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:12px 0 8px}
+    .combo-head b{font-size:14px}
+    .combo-total{border-radius:999px;padding:7px 10px;font-size:12px;border:1px solid var(--line);background:#fff6e3;color:var(--muted);white-space:nowrap}
+    .alt-title{font-size:12px;color:var(--muted);margin:12px 0 8px;line-height:1.55}
+    .food-pill{
+      width:100%;text-align:left;border:1px solid var(--line);background:#fff8eb;border-radius:16px;padding:10px 12px;margin:0 0 8px;color:var(--ink);
+      display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+    }
+    .food-pill:hover{border-color:#d1a15f;background:#fff0c7;transform:translateY(-1px)}
+    .food-pill strong{display:block;font-size:14px}.food-pill small{display:block;color:var(--muted);margin-top:2px}
+    .budget-badge{border-radius:999px;padding:6px 9px;font-size:11px;white-space:nowrap;border:1px solid var(--line);background:white;color:var(--muted)}
+    .select-summary{display:grid;grid-template-columns:1fr .9fr;gap:16px;align-items:stretch}
+    .selected-total{border:1px solid var(--line);background:white;border-radius:24px;padding:18px}
+    .selected-total .sum{font-size:46px;font-weight:950;letter-spacing:-.06em;line-height:1}
+    .selected-total .sum small{font-size:16px;color:var(--muted);letter-spacing:0}
+    .selected-status{border-radius:24px;padding:18px;background:#eff8ee;border:1px solid #d8ead9}
+    .selected-status.over{background:#fff0ee;border-color:#f3c4be}
+    .selected-list{display:grid;gap:8px;margin-top:14px}
+    .estimator{border:1px solid var(--line);background:#fffaf1;border-radius:24px;padding:16px;margin-top:14px}
+    .estimator-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+    .estimator-head h3{margin:0;font-size:20px}
+    .estimator-total{border:1px solid var(--line);background:white;border-radius:18px;padding:12px;margin:12px 0}
+    .estimator-total b{font-size:28px;letter-spacing:-.04em}
+    .quick-foods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:260px;overflow:auto;padding-right:4px}
+    .quick-food{border:1px solid var(--line);background:white;border-radius:16px;padding:10px;text-align:left}
+    .quick-food:hover{border-color:#d1a15f;background:#fff6e3}
+    .quick-food strong{display:block;font-size:13px}.quick-food span{font-size:11px;color:var(--muted)}
+    .meal-list{display:grid;gap:8px;margin-top:10px}
+    .meal-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;border:1px solid var(--line);background:white;border-radius:15px;padding:9px 10px}
+    .meal-item strong{font-size:13px}.meal-item span{font-size:12px;color:var(--muted)}
+    .selected-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;border:1px solid var(--line);background:#fffaf1;border-radius:16px;padding:10px 12px}
+    .selected-item strong{font-size:14px}.selected-item span{font-size:12px;color:var(--muted)}
+    .tiny-btn{border:1px solid var(--line);background:white;border-radius:999px;padding:7px 10px;font-size:11px;color:var(--muted)}
+    .tiny-btn.add{background:#eff8ee;color:#456b49}.tiny-btn.add.added{background:#ffe8ad;color:#251e18;border-color:#d1a15f}
+    .tiny-btn.replace{background:#fff6e3;color:#766b60}
+    .food-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .food-pill{grid-template-columns:1fr auto}
+
+    .budget-badge.ok{background:#eef8ee;color:#456b49}.budget-badge.over{background:#fff0ee;color:#b35248}
+    .tag{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;background:#fff6e3;border:1px solid var(--line);font-size:11px;color:var(--muted);margin:0 5px 7px 0}
+    .equiv{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.eq{background:white;border:1px solid var(--line);border-radius:20px;padding:14px;text-align:center}.eq b{font-size:28px;display:block}.eq span{font-size:11px;color:var(--muted)}
+    .food-tools{display:grid;grid-template-columns:1fr 170px;gap:10px;margin-bottom:12px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.chip{border:1px solid var(--line);background:white;border-radius:999px;padding:8px 11px;font-size:12px;color:var(--muted)}.chip.active{background:#ffe8ad;color:var(--ink);border-color:#d1a15f}
+    .food-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.food{border:1px solid var(--line);background:white;border-radius:22px;padding:16px;position:relative;overflow:hidden}.food:before{content:"";position:absolute;right:-28px;top:-28px;width:95px;height:95px;border-radius:50%;background:rgba(247,190,205,.18)}
+    .food h4{position:relative;margin:0 0 7px}.kcal{position:relative;font-size:29px;font-weight:950;letter-spacing:-.05em;margin-bottom:7px}.food p{position:relative;font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 7px}
+    .source-official{background:#eef8ee;color:#456b49}.source-reported{background:#eff6ff;color:#41617b}.source-estimate{background:#fff4de;color:#80561b}
+    .disclaimer{font-size:12px;line-height:1.75;color:var(--muted);background:#fff7ec;border:1px solid var(--line);border-radius:22px;padding:16px}
+    .drawer{position:fixed;inset:0;display:none;background:rgba(37,30,24,.24);backdrop-filter:blur(10px);z-index:80;padding:20px;align-items:center;justify-content:center}
+    .drawer.show{display:flex}
+    .drawer-card{width:min(980px,100%);max-height:min(88vh,820px);overflow:auto;border:1px solid var(--line);background:#fffdf8;border-radius:28px;box-shadow:0 30px 110px rgba(37,30,24,.22);padding:22px}
+    .drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+    .drawer-head h3{font-size:30px;letter-spacing:-.04em;margin:0}
+    .close{border:0;background:#fff0c7;border-radius:999px;width:38px;height:38px;font-size:20px}
+    .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(16px);opacity:0;pointer-events:none;z-index:120;border:1px solid var(--line);background:#251e18;color:white;border-radius:999px;padding:12px 16px;font-size:13px;box-shadow:0 20px 60px rgba(0,0,0,.18);transition:.22s}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .hidden{display:none!important}
+    @media(max-width:980px){
+      .hero,.budget-card,.select-summary{grid-template-columns:1fr}.hero{min-height:auto}.hero-main,.hero-side,.page-card{padding:25px}.form-grid,.route-grid,.metric-grid,.food-grid,.equiv,.food-tools{grid-template-columns:1fr}.app{width:min(100% - 18px,1180px)}.progress{display:none}.page-title{display:block}.page-title p{margin-top:12px}.route-btn{min-height:auto}.food-pill{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+  <div class="topbar">
+    <div class="brand"><div class="logo"></div><span>Happiness Budget · 快乐热量预算器</span></div>
+    <div class="progress" id="progress"></div>
+  </div>
+  <button class="back-float hidden" id="globalBack" type="button">← 返回上一步</button>
+
+  <section class="page active" data-page="home">
+    <div class="hero">
+      <div class="card hero-main">
+        <div class="eyebrow">Happiness Budget · 快乐热量预算器</div>
+        <h1>开心吃，<br>也能轻一点。</h1>
+        <p class="sub">先算清楚今天大概还能吃多少，再决定这份预算要给汉堡、奶茶、麻辣烫，还是更饱腹的组合。减脂不一定要痛苦，关键是把快乐放进预算里。</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn primary" data-next="energy">开始计算我的预算</button>
+          <button class="btn" data-next="result">看示例结果</button>
+        </div>
+      </div>
+      <div class="card hero-side">
+        <div class="quote">Eat within your budget, <span>not without joy.</span></div>
+        <p class="note">本工具不是医疗或营养诊断，也不会帮你倒推“30 天瘦多少”。你可以选择系统估算今日消耗，也可以手动输入自己的 TDEE 数据。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-page="energy">
+    <div class="card page-card">
+      <div class="page-title">
+        <div><div class="eyebrow">Step 1 / 今日消耗</div><h2>先告诉我你今天大概消耗多少。</h2></div>
+        <p>你可以让系统根据身高体重估算，也可以直接输入你自己已有的 TDEE 数据。</p>
+      </div>
+      <div class="mode-tabs">
+        <button class="btn active" id="modeEstimate">系统估算</button>
+        <button class="btn" id="modeManual">手动输入 TDEE</button>
+      </div>
+      <div id="estimateBox">
+        <div class="form-grid">
+          <div class="field"><label>性别</label><select id="sex"><option value="female">女性</option><option value="male">男性</option><option value="other">不想选择</option></select></div>
+          <div class="field"><label>年龄</label><input id="age" type="number" value="23"></div>
+          <div class="field"><label>身高 cm</label><input id="height" type="number" value="176"></div>
+          <div class="field"><label>体重 kg</label><input id="weight" type="number" value="62"></div>
+        </div>
+        <div class="field"><label>活动量</label><select id="activity">
+          <option value="1.1">极低活动 / 几乎不动</option>
+          <option value="1.2" selected>久坐 / 基本不动</option>
+          <option value="1.3">轻度活动 / 有一些步行</option>
+          <option value="1.45">中等活动 / 有规律运动</option>
+          <option value="1.6">高活动 / 运动较多</option>
+        </select></div>
+        <div class="hint">例如 176cm、62kg、23 岁女性：久坐约 1733 kcal，极低活动约 1588 kcal。系统只是估算，不代表真实消耗一定如此。</div>
+      </div>
+      <div id="manualBox" class="hidden">
+        <div class="field"><label>你预计今日总消耗 TDEE / kcal</label><input id="manualTdee" type="number" value="1700"></div>
+        <div class="hint">如果你已经有 Apple Watch、Keep、薄荷、体测仪等数据，可以直接填这里。</div>
+      </div>
+      <div class="actions">
+        <button class="btn" data-next="home">返回首页</button>
+        <button class="btn primary" data-next="plan">下一步：设置今天计划</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-page="plan">
+    <div class="card page-card">
+      <div class="page-title">
+        <div><div class="eyebrow">Step 2 / 你的计划</div><h2>你今天想空出多少热量缺口？</h2></div>
+        <p></p>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>今天想保留的热量缺口</label><select id="deficit">
+          <option value="200">轻一点：200 kcal</option>
+          <option value="300">稳一点：300 kcal</option>
+          <option value="500" selected>中度控制：500 kcal</option>
+          <option value="custom">自定义</option>
+        </select></div>
+        <div class="field hidden" id="customDeficitBox"><label>自定义缺口 / kcal</label><input id="customDeficit" type="number" value="400"></div>
+        <div class="field">
+          <label>今天已经吃了多少 / kcal</label>
+          <input id="consumed" type="number" value="400">
+          <button class="btn" type="button" id="toggleConsumedEstimator" style="margin-top:8px">不知道吃了多少？帮我估算</button>
+        </div>
+        <div class="estimator hidden" id="consumedEstimator">
+          <div class="estimator-head">
+            <div>
+              <h3>已吃热量估算器</h3>
+              <p class="note" style="margin:6px 0 0">从食物库里选择你今天吃过的东西，系统会帮你粗略加总。也可以手动添加。</p>
+            </div>
+            <button class="tiny-btn" type="button" id="closeConsumedEstimator">收起</button>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>搜索已吃食物</label><input id="consumedSearch" placeholder="比如：奶茶、米饭、板烧、鸡蛋"></div>
+            <div class="field"><label>排序</label><select id="consumedSort"><option value="common">常见优先</option><option value="low">热量从低到高</option><option value="high">热量从高到低</option></select></div>
+          </div>
+          <div class="quick-foods" id="quickConsumedFoods"></div>
+          <div class="estimator-total">
+            <b id="consumedEstimateTotal">0</b> kcal 已估算
+            <p class="note" style="margin:6px 0 0">这是估算值。份量、做法、酱料和杯型都会影响实际热量。</p>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>手动添加食物，可选</label><input id="manualConsumedName" placeholder="比如：半杯奶茶"></div>
+            <div class="field"><label>热量 / kcal</label><input id="manualConsumedKcal" type="number" placeholder="比如：220"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" type="button" id="addManualConsumed">添加手动食物</button>
+            <button class="btn primary" type="button" id="applyConsumedEstimate">应用到“已吃热量”</button>
+            <button class="btn" type="button" id="clearConsumedEstimate">清空估算</button>
+          </div>
+          <div class="meal-list" id="consumedMealList"></div>
+        </div>
+        <div class="field"><label>自定义食物名称，可选</label><input id="customFoodName" placeholder="比如：某杯奶茶"></div>
+        <div class="field"><label>自定义食物热量，可选</label><input id="customFoodKcal" type="number" placeholder="比如：420"></div>
+      </div>
+      <div class="hint">如果你填了自定义食物，它会进入食物库，可以和其他食物一起比较。</div>
+      <div class="actions">
+        <button class="btn" data-next="energy">上一步</button>
+        <button class="btn primary" id="goRoute">生成预算并选择路线</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-page="route">
+    <div class="card page-card">
+      <div class="page-title">
+        <div><div class="eyebrow">Step 3 / 选择路线</div><h2>今天想选择什么路线？</h2></div>
+        <p></p>
+      </div>
+      <div class="route-grid" id="routePicker"></div>
+      <div class="actions">
+        <button class="btn" data-next="plan">上一步</button>
+        <button class="btn primary" id="goResult">查看我的结果</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-page="result">
+    <div class="card page-card">
+      <div class="page-title">
+        <div><div class="eyebrow">Result / 今日预算</div><h2>你的快乐预算结果</h2></div>
+        <p></p>
+      </div>
+      <div class="result-layout">
+        <div class="result-block" id="budgetCard"></div>
+        <div class="result-block" id="selectedSummary"></div>
+        <div class="result-block">
+          <h3 style="margin:0 0 14px;font-size:28px">路线建议</h3>
+          <div class="routes" id="routes"></div>
+        </div>
+        <div class="result-block">
+          <h3 style="margin:0 0 14px;font-size:28px">它大概等于什么？</h3>
+          <div id="equivCard"></div>
+        </div>
+        <div class="result-block">
+          <h3 style="margin:0 0 14px;font-size:28px">可替换食物库</h3>
+          <p class="note" style="margin-top:0">这里会根据你选的路线和剩余预算排序。每个食物都会提示：放进预算后还剩多少，或会超出多少。</p>
+          <div class="food-tools">
+            <input id="searchFood" placeholder="搜索：板烧鸡腿堡、奶茶、麻辣烫、盖浇饭、鸡蛋...">
+            <select id="sortFood"><option value="fit">按适配预算</option><option value="low">热量从低到高</option><option value="high">热量从高到低</option></select>
+          </div>
+          <div class="chips" id="categoryChips"></div>
+          <div class="food-grid" id="foodGrid"></div>
+        </div>
+        <div class="disclaimer">
+          <b>免责声明：</b>本工具仅用于日常饮食预算参考，不提供医疗、营养诊断或个性化治疗建议。食物热量为估算值，不同品牌、地区、杯型、份量、做法、甜度、配料和酱料都会影响实际热量。更准确的数据请以官方营养信息、包装标注或专业营养师建议为准。<br><br>
+          本工具不鼓励极端节食、长期低热量摄入、补偿性断食或惩罚性运动。如果你有饮食失控、长期焦虑、月经紊乱、暴食/催吐倾向，或正在经历健康问题，请优先寻求医生、营养师或心理健康专业人士的帮助。
+        </div>
+        <div class="actions">
+          <button class="btn" data-next="route">重选路线</button>
+          <button class="btn" data-next="plan">修改今日计划</button>
+          <button class="btn primary" data-next="energy">重新计算消耗</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="drawer" id="replaceDrawer">
+  <div class="drawer-card">
+    <div class="drawer-head">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px">Replace Food / 替换食物</div>
+        <h3 id="drawerTitle">替换食物</h3>
+        <p class="note" id="drawerDesc" style="margin:8px 0 0">搜索或浏览同路线下的可替换选择。</p>
+      </div>
+      <button class="close" id="closeDrawer">×</button>
+    </div>
+    <div class="food-tools">
+      <input id="drawerSearch" placeholder="搜索可替换食物">
+      <select id="drawerSort"><option value="fit">按适配预算</option><option value="low">热量从低到高</option><option value="high">热量从高到低</option></select>
+    </div>
+    <div class="food-grid" id="drawerGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">已加入我的选择</div>
+
+<script>
+const foodBase = [{"name": "板烧鸡腿堡", "cat": "快乐快餐", "kcal": 392, "kind": "official", "source": "麦当劳中国官方营养计算器：约 1638 kJ ≈ 392 kcal", "note": "直观、常见、幸福感比较足，也比完整套餐更容易放进预算。", "lighten": "配无糖饮料；如果想更稳，搭配鸡蛋/酸奶作饱腹支撑。", "route": "balanced"}, {"name": "吉士汉堡包", "cat": "快乐快餐", "kcal": 294, "kind": "official", "source": "麦当劳中国官方营养计算器：约 1231 kJ ≈ 294 kcal", "note": "预算不多但想吃汉堡时很适合。", "lighten": "可以加一份蛋白质或清爽蔬菜，不一定要上完整套餐。", "route": "balanced"}, {"name": "巨无霸 Big Mac", "cat": "快乐快餐", "kcal": 513, "kind": "official", "source": "麦当劳中国官方营养计算器：约 2146 kJ ≈ 513 kcal", "note": "快乐主角。能吃，但它应该被当成这一餐的主角。", "lighten": "饮料选无糖；如果加薯条，其他甜品先别叠。", "route": "happy"}, {"name": "麦辣鸡腿汉堡", "cat": "快乐快餐", "kcal": 485, "kind": "official", "source": "麦当劳中国官方营养计算器：约 2029 kJ ≈ 485 kcal", "note": "高满足感主食，单吃比套餐更容易控制。", "lighten": "不要叠含糖饮料，晚点补一点高蛋白更稳。", "route": "happy"}, {"name": "中薯条", "cat": "快乐快餐", "kcal": 289, "kind": "official", "source": "麦当劳中国官方营养计算器：约 1210 kJ ≈ 289 kcal", "note": "很容易被当作配角，但其实已经占一块预算。", "lighten": "想吃薯条就保留它，饮料和甜品别再叠。", "route": "happy"}, {"name": "麦乐鸡 5 块", "cat": "快乐快餐", "kcal": 213, "kind": "official", "source": "麦当劳中国官方营养计算器：约 890 kJ ≈ 213 kcal", "note": "适合做快乐小食，比完整炸鸡套餐更容易放进预算。", "lighten": "蘸酱少一点，配无糖饮料。", "route": "balanced"}, {"name": "麦辣鸡翅 2 块", "cat": "快乐快餐", "kcal": 224, "kind": "official", "source": "麦当劳中国官方营养计算器：约 937 kJ ≈ 224 kcal", "note": "小份炸物快乐，适合当主角之一。", "lighten": "不要和大薯、甜饮、甜品同时叠满。", "route": "happy"}, {"name": "肯德基蛋挞 1 个", "cat": "甜品烘焙", "kcal": 190, "kind": "estimate", "source": "常见公开营养值估算，不同地区/配方会变", "note": "一个蛋挞不是失败，叠加奶茶和炸鸡才容易超。", "lighten": "把它当作甜品主角，饮料选无糖。", "route": "happy"}, {"name": "炸鸡翅 1 对", "cat": "快乐快餐", "kcal": 260, "kind": "estimate", "source": "按常见炸鸡翅份量估算", "note": "高满足，但油脂预算较明显。", "lighten": "搭配清爽主食或蔬菜，不再加甜饮。", "route": "happy"}, {"name": "披萨 1 片", "cat": "快乐快餐", "kcal": 280, "kind": "estimate", "source": "按普通芝士/肉类披萨单片估算", "note": "一片可以放进预算，难点是容易吃到两三片。", "lighten": "先定好片数，配无糖饮料。", "route": "happy"}, {"name": "烤肠 1 根", "cat": "快乐快餐", "kcal": 180, "kind": "estimate", "source": "按常见便利店/街边烤肠估算", "note": "小快乐，钠和脂肪不低。", "lighten": "适合搭配正餐，不适合一路加到奶茶炸物里。", "route": "balanced"}, {"name": "喜茶 喜柿多多 不另外加糖", "cat": "奶茶咖啡", "kcal": 130, "kind": "reported", "source": "公开报道：喜茶 GO 配方页示例，不另外加糖约 130 kcal", "note": "低负担果茶例子，说明甜度会改变预算。", "lighten": "不另外加糖会明显降低热量。", "route": "balanced"}, {"name": "喜茶 喜柿多多 少甜", "cat": "奶茶咖啡", "kcal": 255, "kind": "reported", "source": "公开报道：喜茶 GO 配方页示例，少甜约 255 kcal", "note": "同一杯饮品，甜度变化就会让预算明显改变。", "lighten": "想喝甜的可以喝，但要知道它在预算里的位置。", "route": "happy"}, {"name": "瑞幸轻乳茶 不另外加糖 约 450ml", "cat": "奶茶咖啡", "kcal": 100, "kind": "reported", "source": "公开报道：轻乳茶约 450ml，不另外加糖约 100 kcal", "note": "很适合低负担饮品路线。", "lighten": "不额外加糖，别再叠高糖甜品。", "route": "balanced"}, {"name": "星巴克中杯不另加糖茶拿铁", "cat": "奶茶咖啡", "kcal": 120, "kind": "reported", "source": "星巴克中国新闻：中杯不另加糖冰饮茶拿铁热量低于 120 kcal", "note": "低负担茶拿铁例子。", "lighten": "选择不另加糖，比星冰乐类更容易控制。", "route": "balanced"}, {"name": "普通珍珠奶茶 1 杯", "cat": "奶茶咖啡", "kcal": 520, "kind": "estimate", "source": "按常见中大杯珍珠奶茶估算，受杯型/甜度/小料影响很大", "note": "不是不能喝，但它可能已经接近一顿小餐。", "lighten": "少糖/去小料/小杯，能省出不少预算。", "route": "happy"}, {"name": "奶盖茶 1 杯", "cat": "奶茶咖啡", "kcal": 560, "kind": "estimate", "source": "按常见奶盖茶估算，奶盖厚度差异较大", "note": "奶盖通常是热量大头之一。", "lighten": "少奶盖或不加奶盖，改成纯茶/轻乳茶。", "route": "happy"}, {"name": "芋泥奶茶 1 杯", "cat": "奶茶咖啡", "kcal": 650, "kind": "estimate", "source": "按芋泥+奶茶+小料常见组合估算", "note": "很幸福，但预算占用很高。", "lighten": "小杯/少糖/少芋泥，或者当天不再叠甜品。", "route": "happy"}, {"name": "水果茶 1 杯", "cat": "奶茶咖啡", "kcal": 260, "kind": "estimate", "source": "按常见果茶估算，糖量和果泥会影响很大", "note": "看起来清爽，但含糖版本也会占预算。", "lighten": "选少糖/不另加糖。", "route": "balanced"}, {"name": "美式咖啡", "cat": "奶茶咖啡", "kcal": 15, "kind": "estimate", "source": "按无糖美式估算", "note": "低热量饮品，适合搭配快乐食物。", "lighten": "不加糖浆/奶油即可。", "route": "full"}, {"name": "拿铁 中杯", "cat": "奶茶咖啡", "kcal": 180, "kind": "estimate", "source": "按普通牛奶拿铁估算", "note": "比甜饮轻，但也不是 0 热量。", "lighten": "无糖/低脂奶可降低一点。", "route": "balanced"}, {"name": "星冰乐/冰沙类 1 杯", "cat": "奶茶咖啡", "kcal": 420, "kind": "estimate", "source": "按常见含糖冰沙饮品估算", "note": "更接近甜品，而不是普通咖啡。", "lighten": "小杯、少奶油、少糖浆。", "route": "happy"}, {"name": "奶油蛋糕 1 块", "cat": "甜品烘焙", "kcal": 380, "kind": "estimate", "source": "按常见切块蛋糕估算", "note": "适合做甜品主角，不适合和高糖奶茶一起叠。", "lighten": "半份分享，配无糖茶/美式。", "route": "happy"}, {"name": "瑞士卷 1 块", "cat": "甜品烘焙", "kcal": 260, "kind": "estimate", "source": "按常见切块瑞士卷估算", "note": "小甜口，比较容易放进预算。", "lighten": "当甜品主角即可。", "route": "happy"}, {"name": "泡芙 1 个", "cat": "甜品烘焙", "kcal": 190, "kind": "estimate", "source": "按普通奶油泡芙估算", "note": "单个不算可怕，难点是容易连吃。", "lighten": "设定数量，别边看剧边吃。", "route": "happy"}, {"name": "贝果 1 个", "cat": "甜品烘焙", "kcal": 270, "kind": "estimate", "source": "按普通原味贝果估算", "note": "看起来健康，但本质是扎实主食。", "lighten": "加蛋白质，不要再厚涂高糖酱。", "route": "balanced"}, {"name": "可颂 1 个", "cat": "甜品烘焙", "kcal": 300, "kind": "estimate", "source": "按普通牛角可颂估算", "note": "黄油香气就是预算来源。", "lighten": "当早餐主角，配无糖咖啡。", "route": "happy"}, {"name": "巧克力布朗尼 1 块", "cat": "甜品烘焙", "kcal": 330, "kind": "estimate", "source": "按常见布朗尼切块估算", "note": "高幸福感甜品，适合小份满足。", "lighten": "半份或分享，不叠奶茶。", "route": "happy"}, {"name": "冰淇淋 1 球", "cat": "甜品烘焙", "kcal": 180, "kind": "estimate", "source": "按普通单球冰淇淋估算", "note": "小份快乐，比一大杯奶昔更容易控制。", "lighten": "选单球，不额外加脆筒和酱。", "route": "happy"}, {"name": "巧克力 30g", "cat": "甜品烘焙", "kcal": 165, "kind": "estimate", "source": "按普通巧克力 30g 估算", "note": "适合嘴馋时的小甜口。", "lighten": "提前分装，避免整板无意识吃完。", "route": "happy"}, {"name": "普通盖码饭/盖浇饭", "cat": "外卖主食", "kcal": 950, "kind": "estimate", "source": "按普通外卖份量估算，油量/饭量差异很大", "note": "不是米饭有罪，通常是油、酱汁和饭量一起叠。", "lighten": "少饭，少汤汁，肉菜正常吃。", "route": "happy"}, {"name": "鱼香肉丝盖浇饭", "cat": "外卖主食", "kcal": 1650, "kind": "reported", "source": "公开报道引用 BMJ 餐食研究示例：约 1649.6 kcal/份", "note": "高油高饭量风险很高，接近很多人全天预算。", "lighten": "少饭、少汤汁拌饭，或分成两餐。", "route": "happy"}, {"name": "宫保鸡丁盖浇饭", "cat": "外卖主食", "kcal": 1590, "kind": "reported", "source": "公开报道引用 BMJ 餐食研究示例：约 1589.5 kcal/份", "note": "酱汁、油和饭量是关键。", "lighten": "少饭，少酱汁，别把汤汁全拌进饭里。", "route": "happy"}, {"name": "黄焖鸡米饭", "cat": "外卖主食", "kcal": 850, "kind": "estimate", "source": "按普通外卖份量估算", "note": "酱汁和米饭是预算重点。", "lighten": "少饭，不把汤汁全部拌饭。", "route": "happy"}, {"name": "烤肉饭", "cat": "外卖主食", "kcal": 820, "kind": "estimate", "source": "按普通外卖份量估算", "note": "肉、酱、饭叠加，容易超过预期。", "lighten": "酱另放，饭少一点。", "route": "happy"}, {"name": "韩式拌饭", "cat": "外卖主食", "kcal": 680, "kind": "estimate", "source": "按普通拌饭估算", "note": "相对可控，但酱和饭量要看。", "lighten": "少酱、正常蛋白质，多蔬菜。", "route": "balanced"}, {"name": "炒饭 1 份", "cat": "外卖主食", "kcal": 780, "kind": "estimate", "source": "按普通外卖份量估算", "note": "油和饭量共同决定。", "lighten": "少油版本、加蛋白质，分量别过大。", "route": "happy"}, {"name": "麻辣烫 清汤/少油版", "cat": "麻辣热锅", "kcal": 650, "kind": "estimate", "source": "按食材+汤底估算，实际看配菜和粉面", "note": "可以很快乐也可以很稳，关键在选材。", "lighten": "多蔬菜豆制品蛋白质，少丸子少粉，少喝汤。", "route": "balanced"}, {"name": "麻辣烫 红油+粉面+丸子版", "cat": "麻辣热锅", "kcal": 1050, "kind": "estimate", "source": "按红油汤底、粉面、加工丸子估算", "note": "热量常常来自汤底、丸子、粉面和蘸料。", "lighten": "保留喜欢的丸子，但减少粉面和红油汤。", "route": "happy"}, {"name": "麻辣香锅 1 份", "cat": "麻辣热锅", "kcal": 1300, "kind": "estimate", "source": "按常见外卖份量估算，油量差异极大", "note": "香锅不是不能吃，但它经常是高油组合。", "lighten": "少油少主食，丸子/肥肉少一点，分成两餐。", "route": "happy"}, {"name": "冒菜 1 份", "cat": "麻辣热锅", "kcal": 900, "kind": "estimate", "source": "按普通外卖份量估算", "note": "和麻辣烫类似，重点在汤底和配料。", "lighten": "清汤/少油，多蛋白质和蔬菜。", "route": "happy"}, {"name": "螺蛳粉 1 碗", "cat": "麻辣热锅", "kcal": 750, "kind": "estimate", "source": "按常见袋装/外卖螺蛳粉估算", "note": "粉、油包、花生腐竹都是预算来源。", "lighten": "油包少放，配蛋白质，不喝太多汤。", "route": "happy"}, {"name": "酸辣粉 1 碗", "cat": "麻辣热锅", "kcal": 650, "kind": "estimate", "source": "按普通外卖份量估算", "note": "粉和油辣子是重点。", "lighten": "少油辣子，补蛋白质。", "route": "balanced"}, {"name": "米线 1 碗", "cat": "麻辣热锅", "kcal": 520, "kind": "estimate", "source": "按普通汤米线估算", "note": "如果汤底清爽，相对可控。", "lighten": "加蛋/肉，少油汤底。", "route": "balanced"}, {"name": "袁记云饺/云吞 1 份", "cat": "饺子馄饨", "kcal": 520, "kind": "estimate", "source": "按常见一份水煮云饺/云吞估算，口味和数量差异大", "note": "比炸物稳，但也要看数量和蘸料。", "lighten": "少蘸油辣子，配蔬菜或清汤。", "route": "balanced"}, {"name": "水饺 10 个", "cat": "饺子馄饨", "kcal": 500, "kind": "estimate", "source": "按普通肉馅水饺估算", "note": "可以当完整一餐。", "lighten": "水煮优先，少油蘸料。", "route": "balanced"}, {"name": "煎饺 10 个", "cat": "饺子馄饨", "kcal": 680, "kind": "estimate", "source": "按煎制油量估算", "note": "煎的快乐来自油，也来自预算。", "lighten": "减少数量或和水煮款搭配。", "route": "happy"}, {"name": "馄饨 1 碗", "cat": "饺子馄饨", "kcal": 420, "kind": "estimate", "source": "按普通小馄饨/鲜肉馄饨估算", "note": "相对温和，适合晚间真饿时。", "lighten": "少油辣子，加青菜。", "route": "full"}, {"name": "包子 1 个", "cat": "饺子馄饨", "kcal": 230, "kind": "estimate", "source": "按中等肉包估算", "note": "两个包子就接近一顿轻餐。", "lighten": "搭配蛋白质和无糖饮品。", "route": "balanced"}, {"name": "鸡蛋 1 个", "cat": "干净饱腹", "kcal": 70, "kind": "estimate", "source": "按普通鸡蛋估算", "note": "预算小但饱腹感不错。", "lighten": "适合搭配快乐食物作为蛋白质支撑。", "route": "full"}, {"name": "鸡胸肉 100g", "cat": "干净饱腹", "kcal": 165, "kind": "estimate", "source": "按熟鸡胸肉常见值估算", "note": "高蛋白支撑，适合怕晚上崩。", "lighten": "不必只吃水煮，简单调味也可以。", "route": "full"}, {"name": "豆腐 100g", "cat": "干净饱腹", "kcal": 80, "kind": "estimate", "source": "按北豆腐/普通豆腐估算", "note": "温和蛋白质，适合晚间加餐。", "lighten": "少油烹调。", "route": "full"}, {"name": "米饭 100g", "cat": "干净饱腹", "kcal": 116, "kind": "estimate", "source": "按熟米饭常见值估算", "note": "米饭不是敌人，份量才是关键。", "lighten": "半碗到一碗，配蛋白质和菜。", "route": "full"}, {"name": "红薯 100g", "cat": "干净饱腹", "kcal": 90, "kind": "estimate", "source": "按蒸红薯估算", "note": "甜口主食，饱腹感不错。", "lighten": "别再额外叠高糖饮料。", "route": "full"}, {"name": "玉米 1 根", "cat": "干净饱腹", "kcal": 150, "kind": "estimate", "source": "按中等玉米估算", "note": "适合做温和主食。", "lighten": "搭配蛋白质更稳。", "route": "full"}, {"name": "无糖酸奶 1 杯", "cat": "干净饱腹", "kcal": 120, "kind": "estimate", "source": "按常见无糖酸奶估算", "note": "适合晚间真饿时的温和选择。", "lighten": "注意果粒酸奶可能含糖更高。", "route": "full"}, {"name": "蔬菜沙拉 不加高油酱", "cat": "干净饱腹", "kcal": 180, "kind": "estimate", "source": "按普通蔬菜+少量蛋白估算", "note": "体积感强，但别只吃菜。", "lighten": "加蛋/鸡胸/豆腐，酱料分开放。", "route": "full"}, {"name": "虾仁 100g", "cat": "干净饱腹", "kcal": 100, "kind": "estimate", "source": "按熟虾仁估算", "note": "高蛋白低负担。", "lighten": "少油烹调。", "route": "full"}, {"name": "牛肉 100g", "cat": "干净饱腹", "kcal": 220, "kind": "estimate", "source": "按瘦牛肉熟重估算", "note": "蛋白质支撑强，预算适中。", "lighten": "避免重油酱汁。", "route": "full"}];
+let mode = 'estimate';
+let activeCat = '全部';
+let selectedRoute = 'all';
+let currentPage = 'home';
+let remainingBudget = 800;
+let customFoods = [];
+let selectedFoods = [];
+let consumedEstimateItems = [];
+let lastCalc = null;
+let drawerRoute = 'all';
+let drawerFoodName = '';
+
+const pageOrder = ['home','energy','plan','route','result'];
+const pageNames = {home:'首页', energy:'消耗', plan:'计划', route:'路线', result:'结果'};
+const routeInfo = {
+  happy:{title:'幸福感路线', desc:'今天真的想吃点开心的。把一个快乐主角放进预算，而不是“算了全毁了”。'},
+  full:{title:'干净饱腹路线', desc:'适合白天断食太久、运动后很饿、晚上怕崩。先吃饱，才不容易失控。'},
+  balanced:{title:'折中路线', desc:'一个快乐主角 + 一个饱腹支撑。比如板烧鸡腿堡 + 无糖饮料 + 鸡蛋/酸奶。'},
+  all:{title:'我都看看', desc:'三条路线都展示，你可以根据今晚心情再选。'}
+};
+const categories = ['全部', ...Array.from(new Set(foodBase.map(f=>f.cat)))];
+
+function $(id){return document.getElementById(id)}
+function round(v){return Math.round(v)}
+function allFoods(){return [...foodBase, ...customFoods]}
+
+function navigate(page, addHistory=true){
+  if(!pageOrder.includes(page)) page = 'home';
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === page));
+  renderProgress();
+  if(page === 'result') { calculate(false); renderSelectedSummary(); renderRoutes(); renderEquiv(); renderCats(); renderFoodGrid(); }
+  if(page === 'plan') renderConsumedEstimator();
+  $('globalBack')?.classList.toggle('hidden', page === 'home');
+  if(addHistory){
+    history.pushState({page}, '', `#${page}`);
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function previousPage(){
+  const idx = pageOrder.indexOf(currentPage);
+  if(idx > 0) navigate(pageOrder[idx - 1]);
+}
+function renderProgress(){
+  $('progress').innerHTML = pageOrder.map(p => `<button type="button" class="${p===currentPage?'active':''}" data-jump="${p}">${pageNames[p]}</button>`).join('');
+  document.querySelectorAll('[data-jump]').forEach(btn => btn.onclick = () => navigate(btn.dataset.jump));
+}
+document.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.next)));
+$('globalBack').onclick = previousPage;
+window.addEventListener('popstate', (e) => {
+  const page = e.state?.page || location.hash.replace('#','') || 'home';
+  navigate(page, false);
+});
+
+function calcBMR(){
+  const sex = $('sex').value;
+  const age = Number($('age').value || 23);
+  const h = Number($('height').value || 165);
+  const w = Number($('weight').value || 60);
+  const base = 10*w + 6.25*h - 5*age;
+  if(sex === 'male') return base + 5;
+  if(sex === 'female') return base - 161;
+  return base - 78;
+}
+function getTDEE(){return mode === 'manual' ? Number($('manualTdee').value || 1700) : calcBMR() * Number($('activity').value)}
+function getDeficit(){return $('deficit').value === 'custom' ? Number($('customDeficit').value || 300) : Number($('deficit').value)}
+function safetyStatus(target, remaining){
+  if(target < 1100 || remaining < 250) return {level:'red', title:'今天预算偏低', text:'不建议把剩余热量全部留给高糖/高脂食物，也不建议硬扛。先保证一点蛋白质和真正的饱腹感。'};
+  if(target < 1300 || remaining < 550) return {level:'yellow', title:'适合温和控制', text:'今天可以有选择，但更适合折中路线：一个快乐主角 + 一个饱腹支撑。'};
+  return {level:'green', title:'今天有选择空间', text:'你可以把一部分预算留给幸福感食物，也可以选择更饱腹的组合。'};
+}
+function maybeAddCustom(){
+  const name = $('customFoodName').value.trim();
+  const kcal = Number($('customFoodKcal').value);
+  if(name && kcal && !customFoods.some(f => f.name === name && f.kcal === kcal)){
+    customFoods.push({name,kcal,cat:'自定义',kind:'estimate',source:'用户手动输入',note:'你自己输入的食物，可以直接放进预算里比较。',lighten:'如果不确定热量，可以优先看包装/官方营养表。',route:'balanced'});
+    if(!categories.includes('自定义')) categories.push('自定义');
+    renderConsumedEstimator();
+  }
+}
+function calculate(addCustom=false){
+  if(addCustom) maybeAddCustom();
+  const tdee = getTDEE();
+  const bmr = calcBMR();
+  const deficit = getDeficit();
+  const target = tdee - deficit;
+  const consumed = Number($('consumed').value || 0);
+  const remaining = target - consumed;
+  remainingBudget = Math.max(0, remaining);
+  lastCalc = {tdee,bmr,deficit,target,consumed,remaining};
+  renderBudget(lastCalc);
+}
+function renderBudget(d){
+  const s = safetyStatus(d.target, d.remaining);
+  $('budgetCard').innerHTML = `
+    <div class="budget-card">
+      <div>
+        <div class="big">${Math.max(0,round(d.remaining))}<small> kcal 剩余可用</small></div>
+        <p class="note" style="margin-top:14px">这不是“只能吃水煮菜”的意思，而是你还有空间做选择。</p>
+        <div class="metric-grid">
+          <div class="metric"><b>${round(d.tdee)}</b><span>今日总消耗估算</span></div>
+          <div class="metric"><b>${round(d.deficit)}</b><span>你选择的缺口</span></div>
+          <div class="metric"><b>${round(d.target)}</b><span>今日可摄入预算</span></div>
+        </div>
+      </div>
+      <div class="status ${s.level==='yellow'?'yellow':s.level==='red'?'red':''}">
+        <h3>${s.title}</h3><p>${s.text}</p>
+      </div>
+    </div>`;
+}
+function renderRoutePicker(){
+  $('routePicker').innerHTML = Object.entries(routeInfo).map(([key,r]) => `
+    <button class="btn route-btn ${selectedRoute===key?'active':''}" data-route="${key}">
+      <b>${r.title}</b><span>${r.desc}</span>
+    </button>`).join('');
+  document.querySelectorAll('[data-route]').forEach(btn => btn.onclick = () => {
+    selectedRoute = btn.dataset.route;
+    renderRoutePicker();
+  });
+}
+function routeFilter(route, list){
+  if(route==='all') return list;
+  if(route==='happy') return list.filter(f => ['快乐快餐','奶茶咖啡','甜品烘焙','外卖主食','麻辣热锅'].includes(f.cat));
+  if(route==='full') return list.filter(f => f.cat === '干净饱腹' || f.route === 'full');
+  if(route==='balanced') return list.filter(f => f.route === 'balanced' || f.name.includes('板烧') || f.name.includes('吉士') || f.name.includes('酸奶') || f.name.includes('鸡蛋'));
+  return list;
+}
+function byName(name){
+  return allFoods().find(f => f.name === name);
+}
+function firstFit(names, max=remainingBudget){
+  return names.map(byName).filter(Boolean).find(f => f.kcal <= max) || names.map(byName).filter(Boolean)[0];
+}
+function sortByFit(list, target=remainingBudget*0.55){
+  return list.slice().sort((a,b)=>Math.abs(target-a.kcal)-Math.abs(target-b.kcal));
+}
+function bestForRoute(route, max=remainingBudget){
+  let pool = routeFilter(route, allFoods().filter(f => f.kcal <= Math.max(max, 1)));
+  if(!pool.length) pool = routeFilter(route, allFoods());
+  if(!pool.length) pool = allFoods();
+  return sortByFit(pool, max*0.55).slice(0,4);
+}
+function comboTotal(items){
+  return items.reduce((sum, f) => sum + (f ? f.kcal : 0), 0);
+}
+function comboBadge(total){
+  const diff = Math.round(remainingBudget - total);
+  if(diff >= 0) return `<span class="combo-total">合计 ${total} kcal · 还剩 ${diff} kcal</span>`;
+  return `<span class="combo-total" style="background:#fff0ee;color:#b35248">合计 ${total} kcal · 超出 ${Math.abs(diff)} kcal</span>`;
+}
+function fitCombo(items){
+  const kept = [];
+  let total = 0;
+  items.filter(Boolean).forEach(f => {
+    if(total + f.kcal <= remainingBudget || kept.length === 0){
+      kept.push(f);
+      total += f.kcal;
+    }
+  });
+  return kept;
+}
+function makeRoutePlan(route){
+  if(route === 'happy'){
+    const pool = routeFilter('happy', allFoods()).filter(f => f.kcal <= remainingBudget);
+    const main = sortByFit(pool.length ? pool : routeFilter('happy', allFoods()), remainingBudget*0.55)[0];
+    const combo = main ? [main] : [];
+    const alternatives = sortByFit(routeFilter('happy', allFoods()).filter(f => !main || f.name !== main.name), remainingBudget*0.55).slice(0,3);
+    return {
+      title:'推荐吃法：选 1 个快乐主角',
+      combo,
+      alternatives,
+      altLabel:'可替换主角，下面是“任选一个”，不是全加上'
+    };
+  }
+
+  if(route === 'full'){
+    const preferred = [
+      byName('牛肉 100g'),
+      byName('米饭 100g'),
+      byName('蔬菜沙拉 不加高油酱'),
+      byName('无糖酸奶 1 杯')
+    ];
+    let combo = fitCombo(preferred);
+    if(!combo.length) combo = bestForRoute('full', remainingBudget).slice(0,1);
+    const alternatives = sortByFit(routeFilter('full', allFoods()).filter(f => !combo.some(c => c.name === f.name)), remainingBudget*0.35).slice(0,3);
+    return {
+      title:'推荐组合：饱腹支撑项可以一起吃',
+      combo,
+      alternatives,
+      altLabel:'可替换其中一项，保持总量在预算内'
+    };
+  }
+
+  if(route === 'balanced'){
+    const plans = [
+      [byName('板烧鸡腿堡'), byName('无糖酸奶 1 杯')],
+      [byName('吉士汉堡包'), byName('鸡蛋 1 个')],
+      [byName('麦乐鸡 5 块'), byName('玉米 1 根')],
+      [byName('喜茶 喜柿多多 不另外加糖'), byName('鸡胸肉 100g')]
+    ].filter(p => p.every(Boolean));
+    let combo = plans.find(p => comboTotal(p) <= remainingBudget) || plans[0] || bestForRoute('balanced', remainingBudget).slice(0,1);
+    const alternatives = [
+      byName('吉士汉堡包'),
+      byName('麦乐鸡 5 块'),
+      byName('喜茶 喜柿多多 不另外加糖'),
+      byName('袁记云饺/云吞 1 份')
+    ].filter(Boolean).filter(f => !combo.some(c => c.name === f.name)).slice(0,3);
+    return {
+      title:'推荐组合：1 个快乐主角 + 1 个饱腹支撑',
+      combo,
+      alternatives,
+      altLabel:'可替换快乐主角，替换后看右侧预算提示'
+    };
+  }
+
+  return {title:'推荐组合', combo:bestForRoute(route, remainingBudget).slice(0,1), alternatives:[], altLabel:''};
+}
+
+function showToast(text){
+  const el = $('toast');
+  if(!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => el.classList.remove('show'), 1300);
+}
+
+const commonConsumedNames = [
+  '米饭 100g','鸡蛋 1 个','无糖酸奶 1 杯','鸡胸肉 100g',
+  '板烧鸡腿堡','吉士汉堡包','中薯条','普通珍珠奶茶 1 杯',
+  '袁记云饺/云吞 1 份','水饺 10 个','麻辣烫 清汤/少油版','黄焖鸡米饭',
+  '奶油蛋糕 1 块','拿铁 中杯','红薯 100g','玉米 1 根'
+];
+
+function addConsumedEstimate(foodName){
+  const f = allFoods().find(x => x.name === foodName);
+  if(!f) return;
+  consumedEstimateItems.push({...f, mealId: Date.now() + Math.random()});
+  renderConsumedEstimator();
+  showToast(`已加入已吃估算：${f.name}`);
+}
+function addManualConsumedEstimate(){
+  const name = $('manualConsumedName').value.trim();
+  const kcal = Number($('manualConsumedKcal').value);
+  if(!name || !kcal) return;
+  consumedEstimateItems.push({name, kcal, cat:'手动添加', kind:'estimate', mealId: Date.now() + Math.random()});
+  $('manualConsumedName').value = '';
+  $('manualConsumedKcal').value = '';
+  renderConsumedEstimator();
+  showToast(`已加入已吃估算：${name}`);
+}
+function removeConsumedEstimate(id){
+  consumedEstimateItems = consumedEstimateItems.filter(f => String(f.mealId) !== String(id));
+  renderConsumedEstimator();
+}
+function clearConsumedEstimate(){
+  consumedEstimateItems = [];
+  renderConsumedEstimator();
+}
+function applyConsumedEstimate(){
+  const total = consumedEstimateItems.reduce((sum, f) => sum + f.kcal, 0);
+  $('consumed').value = total;
+  calculate(false);
+  showToast(`已应用：今天已吃约 ${total} kcal`);
+}
+function renderConsumedEstimator(){
+  if(!$('quickConsumedFoods')) return;
+  const query = ($('consumedSearch')?.value || '').trim().toLowerCase();
+  const sort = $('consumedSort')?.value || 'common';
+  let list = allFoods();
+  if(query) list = list.filter(f => (f.name + f.cat + (f.note || '')).toLowerCase().includes(query));
+  if(sort === 'low') list = list.slice().sort((a,b)=>a.kcal-b.kcal);
+  else if(sort === 'high') list = list.slice().sort((a,b)=>b.kcal-a.kcal);
+  else list = list.slice().sort((a,b)=>{
+    const ai = commonConsumedNames.indexOf(a.name);
+    const bi = commonConsumedNames.indexOf(b.name);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+  $('quickConsumedFoods').innerHTML = list.slice(0,24).map(f => `
+    <button class="quick-food" type="button" data-add-consumed="${escapeAttr(f.name)}">
+      <strong>${f.name}</strong><span>${f.cat} · ${f.kcal} kcal</span>
+    </button>
+  `).join('');
+  const total = consumedEstimateItems.reduce((sum, f) => sum + f.kcal, 0);
+  $('consumedEstimateTotal').textContent = total;
+  $('consumedMealList').innerHTML = consumedEstimateItems.map(f => `
+    <div class="meal-item">
+      <div><strong>${f.name}</strong><br><span>${f.cat || '已吃'} · ${f.kcal} kcal</span></div>
+      <span>${f.kcal} kcal</span>
+      <button class="tiny-btn" type="button" data-remove-consumed="${f.mealId}">删除</button>
+    </div>
+  `).join('');
+}
+
+function addToSelection(foodName){
+  const f = allFoods().find(x => x.name === foodName);
+  if(!f) return;
+  selectedFoods.push({...f, selectedId: Date.now() + Math.random()});
+  renderSelectedSummary();
+  renderRoutes();
+  showToast(`已加入：${f.name}`);
+}
+function removeSelected(id){
+  selectedFoods = selectedFoods.filter(f => String(f.selectedId) !== String(id));
+  renderSelectedSummary();
+  renderRoutes();
+  showToast('已从选择中删除');
+}
+function clearSelected(){
+  selectedFoods = [];
+  renderSelectedSummary();
+  renderRoutes();
+  showToast('已清空选择');
+}
+function renderSelectedSummary(){
+  const box = $('selectedSummary');
+  if(!box) return;
+  const total = selectedFoods.reduce((sum, f) => sum + f.kcal, 0);
+  const diff = Math.round(remainingBudget - total);
+  const statusClass = diff >= 0 ? '' : 'over';
+  const statusTitle = selectedFoods.length ? (diff >= 0 ? `还可以吃 ${diff} kcal` : `已经超出 ${Math.abs(diff)} kcal`) : '还没有选择食物';
+  const statusText = selectedFoods.length
+    ? (diff >= 0 ? '这组选择还在今天剩余预算内。你可以继续加，也可以到这里停止。' : '这组选择已经超过今天剩余预算。可以删掉一项，或回到食物库换成更轻的选择。')
+    : '你可以从下面的路线建议或食物库里点击“加入选择”。加入后这里会立刻显示总热量、还剩多少或超出多少。';
+  box.innerHTML = `
+    <h3 style="margin:0 0 14px;font-size:28px">我的选择（多选合计）</h3>
+    <div class="select-summary">
+      <div class="selected-total">
+        <div class="sum">${total}<small> kcal 已选择</small></div>
+        <p class="note" style="margin:10px 0 0">今日剩余预算：${Math.round(remainingBudget)} kcal</p>
+        ${selectedFoods.length ? '<button class="tiny-btn" data-clear-selected style="margin-top:10px">清空选择</button>' : ''}
+      </div>
+      <div class="selected-status ${statusClass}">
+        <h3 style="margin:0 0 8px">${statusTitle}</h3>
+        <p class="note" style="margin:0">${statusText}</p>
+      </div>
+    </div>
+    <div class="selected-list">
+      ${selectedFoods.map(f => `
+        <div class="selected-item">
+          <div><strong>${f.name}</strong><br><span>${f.cat} · ${f.kcal} kcal</span></div>
+          <span>${f.kcal} kcal</span>
+          <button class="tiny-btn" data-remove-selected="${f.selectedId}">删除</button>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
+function renderRoutes(){
+  const routesToShow = selectedRoute === 'all' ? ['happy','full','balanced'] : [selectedRoute];
+  $('routes').innerHTML = routesToShow.map(key => {
+    const r = routeInfo[key];
+    const plan = makeRoutePlan(key);
+    const total = comboTotal(plan.combo);
+    return `<div class="route-card">
+      <h3>${r.title}</h3>
+      <p>${r.desc}</p>
+      <div class="combo-head"><b>${plan.title}</b>${comboBadge(total)}</div>
+      ${plan.combo.map(f=>foodPill(f,key,'组合项')).join('')}
+      ${plan.alternatives.length ? `<div class="alt-title">${plan.altLabel}</div>${plan.alternatives.map(f=>foodPill(f,key,'可替换')).join('')}` : ''}
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-replace]').forEach(btn => btn.onclick = () => {
+    const route = btn.dataset.route;
+    const name = btn.dataset.replace;
+    openReplaceDrawer(name, route);
+  });
+}
+function budgetText(kcal){
+  const diff = Math.round(remainingBudget - kcal);
+  if(diff >= 0) return {text:`单选后还剩 ${diff} kcal`, cls:'ok'};
+  return {text:`单选超出 ${Math.abs(diff)} kcal`, cls:'over'};
+}
+function selectedCount(name){
+  return selectedFoods.filter(x => x.name === name).length;
+}
+function foodPill(f, route, label='可选'){
+  const b = budgetText(f.kcal);
+  const count = selectedCount(f.name);
+  const added = count > 0;
+  return `<div class="food-pill">
+    <span><strong>${f.name}${added ? ` × ${count}` : ''}</strong><small>${label} · ${f.kcal} kcal</small></span>
+    <div class="food-actions">
+      <em class="budget-badge ${b.cls}">${b.text}</em>
+      <button class="tiny-btn add ${added ? 'added' : ''}" data-add="${escapeAttr(f.name)}">${added ? '再加一份' : '加入选择'}</button>
+      <button class="tiny-btn replace" data-replace="${escapeAttr(f.name)}" data-route="${route}">替换</button>
+    </div>
+  </div>`;
+}
+function escapeAttr(s){return String(s).replace(/"/g,'&quot;')}
+function renderEquiv(){
+  const item = allFoods().filter(f => f.kcal <= Math.max(remainingBudget,1)).sort((a,b)=>Math.abs(remainingBudget*.55-a.kcal)-Math.abs(remainingBudget*.55-b.kcal))[0] || allFoods()[0];
+  const kcal = item.kcal;
+  $('equivCard').innerHTML = `
+    <p class="note" style="margin:0 0 10px">例如 <b>${item.name}</b> 约 ${kcal} kcal。它大概相当于：</p>
+    <div class="equiv">
+      <div class="eq"><b>${(kcal/70).toFixed(1)}</b><span>个鸡蛋</span></div>
+      <div class="eq"><b>${(kcal/116).toFixed(1)}</b><span>份 100g 米饭</span></div>
+      <div class="eq"><b>${(kcal/289).toFixed(1)}</b><span>份中薯</span></div>
+      <div class="eq"><b>${(kcal/180).toFixed(1)}</b><span>杯中杯拿铁</span></div>
+    </div>
+    <p class="note" style="margin-top:10px">这不是为了制造负担，而是帮你知道它在今天预算里的位置。</p>`;
+}
+function renderCats(){
+  $('categoryChips').innerHTML = categories.map(cat => `<button class="chip ${activeCat===cat?'active':''}" data-cat="${cat}">${cat}</button>`).join('');
+  document.querySelectorAll('[data-cat]').forEach(btn => btn.onclick = () => {activeCat=btn.dataset.cat;renderCats();renderFoodGrid();});
+}
+function getVisibleFoodList(route=selectedRoute, q='', sort=$('sortFood')?.value || 'fit'){
+  let list = routeFilter(route, allFoods());
+  if(activeCat !== '全部' && route === selectedRoute) list = list.filter(f => f.cat === activeCat);
+  if(q) list = list.filter(f => (f.name+f.cat+f.note).toLowerCase().includes(q.toLowerCase()));
+  if(sort==='low') list.sort((a,b)=>a.kcal-b.kcal);
+  else if(sort==='high') list.sort((a,b)=>b.kcal-a.kcal);
+  else list.sort((a,b)=>Math.abs(remainingBudget-a.kcal)-Math.abs(remainingBudget-b.kcal));
+  return list;
+}
+function renderFoodGrid(){
+  const q = $('searchFood').value.trim();
+  const sort = $('sortFood').value;
+  const list = getVisibleFoodList(selectedRoute, q, sort);
+  $('foodGrid').innerHTML = list.slice(0,42).map(foodCard).join('') || `<div class="note">没有找到对应食物。你可以在计划页添加自定义食物。</div>`;
+}
+function sourceClass(k){return k==='official'?'source-official':k==='reported'?'source-reported':'source-estimate'}
+function sourceLabel(k){return k==='official'?'官方':k==='reported'?'公开报道':k==='combo'?'组合':'估算'}
+function foodCard(f){
+  const b = budgetText(f.kcal);
+  const count = selectedCount(f.name);
+  const added = count > 0;
+  const currentTotal = selectedFoods.reduce((sum, item) => sum + item.kcal, 0);
+  const totalIfAdd = currentTotal + f.kcal;
+  const diff = Math.round(remainingBudget - totalIfAdd);
+  const comboText = diff >= 0 ? `加入后还剩 ${diff} kcal` : `加入后超出 ${Math.abs(diff)} kcal`;
+  const comboCls = diff >= 0 ? 'source-official' : 'source-estimate';
+  return `<div class="food"><h4>${f.name}${added ? ` × ${count}` : ''}</h4><div class="kcal">${f.kcal} <small style="font-size:13px;color:var(--muted)">kcal</small></div>
+    <span class="tag">${f.cat}</span><span class="tag ${sourceClass(f.kind)}">${sourceLabel(f.kind)}</span><span class="tag ${b.cls==='over'?'source-estimate':'source-official'}">${b.text}</span><span class="tag ${comboCls}">${comboText}</span>
+    <p><b>预算感：</b>${f.note}</p><p><b>轻一点：</b>${f.lighten}</p><p><b>数据：</b>${f.source}</p>
+    <button class="btn ${added ? 'active' : ''}" style="width:100%;margin-top:8px;padding:10px 12px" data-add="${escapeAttr(f.name)}">${added ? '已加入，再加一份' : '加入我的选择'}</button>
+  </div>`;
+}
+function openReplaceDrawer(name, route){
+  drawerFoodName = name;
+  drawerRoute = route;
+  $('drawerTitle').textContent = `替换：${name}`;
+  $('drawerDesc').textContent = `以下是 ${routeInfo[route]?.title || '当前路线'} 下的可替换食物。每个选项都会提示还可吃多少，或超出多少。`;
+  $('drawerSearch').value = '';
+  $('drawerSort').value = 'fit';
+  renderDrawerGrid();
+  $('replaceDrawer').classList.add('show');
+}
+function renderDrawerGrid(){
+  const q = $('drawerSearch').value.trim();
+  const sort = $('drawerSort').value;
+  let list = routeFilter(drawerRoute, allFoods()).filter(f => f.name !== drawerFoodName);
+  if(q) list = list.filter(f => (f.name+f.cat+f.note).toLowerCase().includes(q.toLowerCase()));
+  if(sort==='low') list.sort((a,b)=>a.kcal-b.kcal);
+  else if(sort==='high') list.sort((a,b)=>b.kcal-a.kcal);
+  else list.sort((a,b)=>Math.abs(remainingBudget-a.kcal)-Math.abs(remainingBudget-b.kcal));
+  $('drawerGrid').innerHTML = list.slice(0,32).map(foodCard).join('') || `<div class="note">没有找到可替换食物。</div>`;
+}
+
+
+$('toggleConsumedEstimator').onclick = () => {
+  $('consumedEstimator').classList.toggle('hidden');
+  renderConsumedEstimator();
+};
+$('closeConsumedEstimator').onclick = () => $('consumedEstimator').classList.add('hidden');
+$('consumedSearch').oninput = renderConsumedEstimator;
+$('consumedSort').onchange = renderConsumedEstimator;
+$('addManualConsumed').onclick = addManualConsumedEstimate;
+$('applyConsumedEstimate').onclick = applyConsumedEstimate;
+$('clearConsumedEstimate').onclick = clearConsumedEstimate;
+
+$('modeEstimate').onclick = () => {mode='estimate';$('modeEstimate').classList.add('active');$('modeManual').classList.remove('active');$('estimateBox').classList.remove('hidden');$('manualBox').classList.add('hidden');calculate(false)};
+$('modeManual').onclick = () => {mode='manual';$('modeManual').classList.add('active');$('modeEstimate').classList.remove('active');$('estimateBox').classList.add('hidden');$('manualBox').classList.remove('hidden');calculate(false)};
+$('deficit').onchange = () => {$('customDeficitBox').classList.toggle('hidden', $('deficit').value !== 'custom'); calculate(false)};
+$('goRoute').onclick = () => {calculate(true); navigate('route')};
+$('goResult').onclick = () => {calculate(false); navigate('result')};
+$('searchFood').oninput = renderFoodGrid;
+$('sortFood').onchange = renderFoodGrid;
+$('drawerSearch').oninput = renderDrawerGrid;
+$('drawerSort').onchange = renderDrawerGrid;
+$('closeDrawer').onclick = () => $('replaceDrawer').classList.remove('show');
+$('replaceDrawer').onclick = e => { if(e.target.id === 'replaceDrawer') $('replaceDrawer').classList.remove('show'); };
+['sex','age','height','weight','activity','manualTdee','customDeficit','consumed'].forEach(id => $(id).addEventListener('input', () => calculate(false)));
+
+
+document.addEventListener('click', (e) => {
+  const consumedBtn = e.target.closest('[data-add-consumed]');
+  if(consumedBtn){
+    e.stopPropagation();
+    addConsumedEstimate(consumedBtn.dataset.addConsumed);
+    return;
+  }
+  const removeConsumedBtn = e.target.closest('[data-remove-consumed]');
+  if(removeConsumedBtn){
+    e.stopPropagation();
+    removeConsumedEstimate(removeConsumedBtn.dataset.removeConsumed);
+    return;
+  }
+  const addBtn = e.target.closest('[data-add]');
+  if(addBtn){
+    e.stopPropagation();
+    addToSelection(addBtn.dataset.add);
+    renderFoodGrid();
+    renderDrawerGrid();
+    return;
+  }
+  const removeBtn = e.target.closest('[data-remove-selected]');
+  if(removeBtn){
+    e.stopPropagation();
+    removeSelected(removeBtn.dataset.removeSelected);
+    renderFoodGrid();
+    renderDrawerGrid();
+    return;
+  }
+  const clearBtn = e.target.closest('[data-clear-selected]');
+  if(clearBtn){
+    e.stopPropagation();
+    clearSelected();
+    renderFoodGrid();
+    renderDrawerGrid();
+    return;
+  }
+});
+
+history.replaceState({page: currentPage}, '', location.hash || '#home');
+const initialHash = location.hash.replace('#','');
+if(initialHash && pageOrder.includes(initialHash)){
+  currentPage = initialHash;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.dataset.page === currentPage));
+}
+renderProgress();
+$('globalBack')?.classList.toggle('hidden', currentPage === 'home');
+renderRoutePicker();
+renderCats();
+calculate(false);
+if(currentPage === 'result') { renderSelectedSummary(); renderRoutes(); renderEquiv(); renderFoodGrid(); }
+if(currentPage === 'plan') renderConsumedEstimator();
+</script>
+</body>
+</html>
